@@ -2,6 +2,14 @@ import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import './App.css';
 
+// base URL for backend
+const API_URL = helpdesk-ticket-system-kfa41go53-parthegons-projects.vercel.app;
+
+// axios instance so I don't have to repeat the base URL everywhere
+const api = axios.create({
+  baseURL: API_URL,
+});
+
 function App() {
   const [tickets, setTickets] = useState([]);
   const [title, setTitle] = useState('');
@@ -14,9 +22,16 @@ function App() {
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // fetch tickets from backend with optional filters
   const fetchTickets = useCallback(async () => {
     try {
-      let url = 'http://localhost:5000/api/tickets';
+      setLoading(true);
+      setError('');
+
+      let url = '/api/tickets';
 
       const params = [];
       if (filterStatus) params.push(`status=${filterStatus}`);
@@ -26,10 +41,13 @@ function App() {
         url += '?' + params.join('&');
       }
 
-      const res = await axios.get(url);
+      const res = await api.get(url);
       setTickets(res.data);
     } catch (err) {
       console.error(err);
+      setError('Failed to load tickets');
+    } finally {
+      setLoading(false);
     }
   }, [filterStatus, filterPriority]);
 
@@ -37,52 +55,71 @@ function App() {
     fetchTickets();
   }, [fetchTickets]);
 
+  // create a new ticket
   const createTicket = async () => {
     if (!title || !description) return alert('Fill all fields');
 
-    await axios.post('http://localhost:5000/api/tickets', {
-      title,
-      description
-    });
+    try {
+      await api.post('/api/tickets', { title, description });
 
-    setTitle('');
-    setDescription('');
-    fetchTickets();
+      setTitle('');
+      setDescription('');
+      fetchTickets();
+    } catch (err) {
+      setError('Failed to create ticket');
+    }
   };
 
+  // delete a ticket
   const deleteTicket = async (id) => {
-    await axios.delete(`http://localhost:5000/api/tickets/${id}`);
-    fetchTickets();
+    try {
+      await api.delete(`/api/tickets/${id}`);
+      fetchTickets();
+    } catch {
+      setError('Failed to delete ticket');
+    }
   };
 
+  // mark ticket as closed
   const updateStatus = async (id) => {
-    await axios.put(`http://localhost:5000/api/tickets/${id}`, {
-      status: 'Closed'
-    });
-    fetchTickets();
+    try {
+      await api.put(`/api/tickets/${id}`, { status: 'Closed' });
+      fetchTickets();
+    } catch {
+      setError('Failed to update status');
+    }
   };
 
+  // start editing a ticket
   const startEdit = (ticket) => {
     setEditingId(ticket.id);
     setEditTitle(ticket.title);
     setEditDescription(ticket.description);
   };
 
+  // save edited ticket
   const saveEdit = async (id) => {
-    await axios.put(`http://localhost:5000/api/tickets/${id}`, {
-      title: editTitle,
-      description: editDescription
-    });
+    try {
+      await api.put(`/api/tickets/${id}`, {
+        title: editTitle,
+        description: editDescription,
+      });
 
-    setEditingId(null);
-    fetchTickets();
+      setEditingId(null);
+      fetchTickets();
+    } catch {
+      setError('Failed to update ticket');
+    }
   };
 
   return (
     <div className="container">
       <h1 className="header">Helpdesk Ticket System</h1>
 
-      {/* CREATE */}
+      {error && <p className="error">{error}</p>}
+      {loading && <p>Loading...</p>}
+
+      {/* create ticket section */}
       <div className="card">
         <h2>Create Ticket</h2>
 
@@ -105,7 +142,7 @@ function App() {
         </button>
       </div>
 
-      {/* FILTERS */}
+      {/* filter section */}
       <div className="card">
         <h2>Filter Tickets</h2>
 
@@ -124,8 +161,8 @@ function App() {
         </div>
       </div>
 
-      {/* TICKETS */}
-      {tickets.length === 0 ? (
+      {/* ticket list */}
+      {tickets.length === 0 && !loading ? (
         <p>No tickets found</p>
       ) : (
         tickets.map((ticket) => (
@@ -142,7 +179,10 @@ function App() {
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                 />
-                <button className="btn btn-create" onClick={() => saveEdit(ticket.id)}>
+                <button
+                  className="btn btn-create"
+                  onClick={() => saveEdit(ticket.id)}
+                >
                   Save
                 </button>
               </>
@@ -154,7 +194,13 @@ function App() {
             )}
 
             <div className="meta">
-              <span className={ticket.status === 'Closed' ? 'status-closed' : 'status-open'}>
+              <span
+                className={
+                  ticket.status === 'Closed'
+                    ? 'status-closed'
+                    : 'status-open'
+                }
+              >
                 {ticket.status}
               </span>
               <span>{ticket.priority}</span>
@@ -162,15 +208,24 @@ function App() {
             </div>
 
             <div className="button-group">
-              <button className="btn btn-delete" onClick={() => deleteTicket(ticket.id)}>
+              <button
+                className="btn btn-delete"
+                onClick={() => deleteTicket(ticket.id)}
+              >
                 Delete
               </button>
 
-              <button className="btn btn-close" onClick={() => updateStatus(ticket.id)}>
+              <button
+                className="btn btn-close"
+                onClick={() => updateStatus(ticket.id)}
+              >
                 Close
               </button>
 
-              <button className="btn btn-edit" onClick={() => startEdit(ticket)}>
+              <button
+                className="btn btn-edit"
+                onClick={() => startEdit(ticket)}
+              >
                 Edit
               </button>
             </div>
