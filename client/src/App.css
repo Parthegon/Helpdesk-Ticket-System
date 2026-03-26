@@ -1,0 +1,101 @@
+body {
+  margin: 0;
+  background: #f4f6f8;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* Cards */
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin-bottom: 25px;
+}
+
+/* Inputs */
+.input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-create { background: #007bff; color: white; }
+.btn-delete { background: #dc3545; color: white; }
+.btn-close { background: #28a745; color: white; }
+.btn-edit { background: #ffc107; color: black; }
+
+/* Filters */
+.filters {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.filters select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  min-width: 150px;
+}
+
+/* Ticket cards */
+.ticket-card {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  transition: 0.2s ease;
+  margin-bottom: 15px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.07);
+}
+
+.ticket-card:hover {
+  transform: translateY(-3px);
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+/* Status colors */
+.status-open {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.status-closed {
+  color: #28a745;
+  font-weight: bold;
+}
+
+/* Buttons */
+.button-group {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
